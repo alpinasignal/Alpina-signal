@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Alpina Signal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Telegram -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <!-- TradingView -->
+    <script src="https://s3.tradingview.com/tv.js"></script>
+
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app" id="appRoot">
+
+    <!-- PROFILE -->
+    <div class="header">
+        <img id="userPhoto" class="avatar" alt="Avatar">
+        <div>
+            <div id="userName" class="username"></div>
+            <div id="userId" class="userid"></div>
+        </div>
+    </div>
+
+    <!-- NAV -->
+    <div class="nav">
+        <button type="button" onclick="showScreen('signals')">Signals</button>
+        <button type="button" onclick="showScreen('about')">About</button>
+        <button type="button" onclick="showScreen('contacts')">Contacts</button>
+        <button type="button" onclick="openModal()">Subscribe</button>
+    </div>
+
+    <!-- SIGNALS -->
+    <div id="screen-signals" class="screen active">
+
+        <div class="card">
+            <label class="label">Coin</label>
+            <select id="coinSelect" class="select">
+                <option value="BTCUSDT">BTC / USDT</option>
+                <option value="ETHUSDT">ETH / USDT</option>
+                <option value="SOLUSDT">SOL / USDT</option>
+            </select>
+
+            <label class="label">Timeframe</label>
+            <div class="tf-row">
+                <button type="button" class="tf-btn active" data-tf="5">5m</button>
+                <button type="button" class="tf-btn" data-tf="15">15m</button>
+                <button type="button" class="tf-btn" data-tf="60">1h</button>
+            </div>
+
+            <button type="button" id="getSignalBtn" class="primary">Get Signal</button>
+        </div>
+
+        <!-- SIGNAL CARD -->
+        <div id="signalCard" class="signal-card hidden"></div>
+
+        <!-- CHART -->
+        <div class="chart-wrapper" id="chartWrapper">
+            <div id="tv_chart"></div>
+        </div>
+    </div>
+
+    <!-- ABOUT -->
+    <div id="screen-about" class="screen">
+        <div class="card">
+            <h2>🚀 About Alpina Signal</h2>
+
+            <p class="p">
+                <b>Alpina Signal</b> is a professional crypto futures signal platform
+                focused on <b>precision</b>, <b>risk control</b> and <b>discipline</b>.
+            </p>
+
+            <div class="about-grid">
+                <div class="about-item">
+                    <div class="about-emoji">📊</div>
+                    <div>
+                        <div class="about-title">Market Analysis</div>
+                        <div class="about-text">Trend, momentum and volatility-based logic.</div>
+                    </div>
+                </div>
+
+                <div class="about-item">
+                    <div class="about-emoji">🧠</div>
+                    <div>
+                        <div class="about-title">AI-style Filtering</div>
+                        <div class="about-text">Avoids random trades and low-quality setups.</div>
+                    </div>
+                </div>
+
+                <div class="about-item">
+                    <div class="about-emoji">🛡️</div>
+                    <div>
+                        <div class="about-title">Risk Management</div>
+                        <div class="about-text">Every signal includes Entry, SL and TP.</div>
+                    </div>
+                </div>
+            </div>
+
+            <p class="p muted">
+                Trade probabilities, not emotions.
+            </p>
+        </div>
+    </div>
+
+    <!-- CONTACTS -->
+    <div id="screen-contacts" class="screen">
+        <div class="card">
+            <h2>📞 Contacts</h2>
+
+            <div class="contact-box">
+                <div class="contact-line">💬 Support</div>
+                <div class="contact-value">@AlpinaCoin_Support</div>
+            </div>
+
+            <div class="contact-box">
+                <div class="contact-line">🤖 Bot</div>
+                <div class="contact-value">@AlpinaSignal_Bot</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- SUBSCRIPTION MODAL -->
+<div id="subscriptionModal" class="modal" data-modal="subscription">
+    <div class="modal-box">
+        <h3>Choose your plan</h3>
+
+        <div class="plan-card" data-plan="basic">
+            <b>Basic</b>
+            <span>14.99 USDT</span>
+            <small>3 coins · 30 days</small>
+        </div>
+
+        <div class="plan-card" data-plan="pro">
+            <b>Pro</b>
+            <span>24.99 USDT</span>
+            <small>7 coins · 30 days</small>
+        </div>
+
+        <div class="plan-card" data-plan="elite">
+            <b>Elite</b>
+            <span>39.99 USDT</span>
+            <small>All coins · 30 days</small>
+        </div>
+
+        <pre id="paymentInfo"></pre>
+        <button type="button" onclick="closeModal()">Close</button>
+    </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
