@@ -389,3 +389,33 @@ body {
         transform: translateY(0);
     }
 }
+.contacts-title {
+    font-size: 22px;
+    margin-bottom: 16px;
+}
+
+.contact-item {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    padding: 12px;
+    background: #0b0f14;
+    border-radius: 12px;
+    margin-bottom: 10px;
+}
+
+.contact-item img {
+    width: 32px;
+    height: 32px;
+}
+
+.contact-name {
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.contact-item a {
+    color: #f7b733;
+    text-decoration: none;
+    font-size: 13px;
+}
