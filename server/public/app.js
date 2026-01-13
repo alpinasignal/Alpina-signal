@@ -1,39 +1,58 @@
 // ============================
-// TELEGRAM INIT
+// SAFE TELEGRAM INIT
 // ============================
-const tg = window.Telegram.WebApp;
-tg.ready();
-tg.expand();
+let tg = null;
+let tgUser = null;
 
-const API = "";
-const user = tg.initDataUnsafe.user || {};
+if (window.Telegram && window.Telegram.WebApp) {
+    tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+    tgUser = tg.initDataUnsafe.user || null;
+}
+
+// ============================
+// API (ONE DOMAIN)
+// ============================
+const API = "https://app.alpinasignal.cc";
+
+// ============================
+// USER (Telegram OR Guest)
+// ============================
+const user = tgUser
+    ? {
+        id: tgUser.id,
+        username: tgUser.username || "",
+        first_name: tgUser.first_name || "",
+        photo_url: tgUser.photo_url || ""
+    }
+    : {
+        id: "guest_" + Math.random().toString(36).slice(2),
+        username: "Guest"
+    };
 
 // ============================
 // PROFILE
 // ============================
-if (user.id) {
-    document.getElementById("userName").innerText =
-        user.username ? `@${user.username}` : user.first_name;
+document.getElementById("userName").innerText =
+    user.username ? `@${user.username}` : user.first_name || "Guest";
 
-    document.getElementById("userId").innerText = `ID: ${user.id}`;
+document.getElementById("userId").innerText = `ID: ${user.id}`;
 
-    document.getElementById("userPhoto").src =
-        user.photo_url || "https://i.imgur.com/6VBx3io.png";
-}
+document.getElementById("userPhoto").src =
+    user.photo_url || "https://i.imgur.com/6VBx3io.png";
 
 // ============================
 // AUTH
 // ============================
-if (user && user.id) {
-    fetch("/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            id: user.id,
-            username: user.username || ""
-        })
-    }).catch(() => {});
-}
+fetch(`${API}/auth`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+        id: user.id,
+        username: user.username
+    })
+}).catch(() => {});
 
 // ============================
 // NAVIGATION
@@ -109,7 +128,7 @@ document.querySelectorAll(".tf-btn").forEach(btn => {
 // ============================
 function copyText(value) {
     navigator.clipboard.writeText(value);
-    tg.showToast("Copied");
+    if (tg) tg.showToast("Copied");
 }
 
 function renderSignalCard(data) {
@@ -120,13 +139,15 @@ function renderSignalCard(data) {
 
     if (data.noSignal) {
         card.className = "signal-card";
-        card.innerHTML = "⏳ No clear setup right now. Try another timeframe or coin.";
+        card.innerHTML =
+            "⏳ No clear setup right now.<br>Try another timeframe or coin.";
         return;
     }
 
     if (data.error) {
         card.className = "signal-card";
-        card.innerHTML = "⚠️ Server error. Try again later.";
+        card.innerHTML =
+            "⚠️ Server error.<br>Please try again in a few seconds.";
         return;
     }
 
@@ -165,11 +186,6 @@ function renderSignalCard(data) {
                 <div class="signal-value">${data.confidence || "-"}</div>
             </div>
         </div>
-
-        <div class="signal-footer">
-            <div class="badge">Risk: ${data.risk || "-"}</div>
-            <div class="badge">Win: ${data.winRate || "-"}</div>
-        </div>
     `;
 }
 
@@ -177,12 +193,7 @@ function renderSignalCard(data) {
 // GET SIGNAL
 // ============================
 document.getElementById("getSignalBtn").onclick = () => {
-    if (!user || !user.id) {
-        alert("Telegram user not initialized");
-        return;
-    }
-
-    fetch("/signal", {
+    fetch(`${API}/signal`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -191,7 +202,11 @@ document.getElementById("getSignalBtn").onclick = () => {
             timeframe: currentTF
         })
     })
-    .then(res => res.json())
+    .then(async res => {
+        const text = await res.text();
+        console.log("SIGNAL RAW RESPONSE:", text);
+        return JSON.parse(text);
+    })
     .then(data => {
         if (data.blocked) {
             openModal();
@@ -199,9 +214,11 @@ document.getElementById("getSignalBtn").onclick = () => {
         }
         renderSignalCard(data);
     })
-    .catch(() => renderSignalCard({ error: true }));
+    .catch(err => {
+        console.error("SIGNAL ERROR:", err);
+        renderSignalCard({ error: true });
+    });
 };
-
 
 // ============================
 // SUBSCRIPTION MODAL
@@ -241,11 +258,7 @@ document.querySelectorAll(".plan-card").forEach(card => {
 });
 
 // ============================
-// FINAL INIT (NO DOMCONTENTLOADED)
+// FINAL INIT
 // ============================
 if (modal) modal.classList.add("hidden");
-showScreen("signals");
-
-// FINAL SAFE INIT
-if (modal) modal.classList.remove("active");
 showScreen("signals");
