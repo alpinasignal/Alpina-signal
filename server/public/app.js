@@ -5,7 +5,7 @@ const tg = window.Telegram.WebApp;
 tg.ready();
 tg.expand();
 
-const API = "https://exclamational-unmeanderingly-jerome.ngrok-free.dev";
+const API = "";
 const user = tg.initDataUnsafe.user || {};
 
 // ============================
@@ -24,11 +24,16 @@ if (user.id) {
 // ============================
 // AUTH
 // ============================
-fetch(`${API}/auth`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(user)
-}).catch(() => {});
+if (user && user.id) {
+    fetch("/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            id: user.id,
+            username: user.username || ""
+        })
+    }).catch(() => {});
+}
 
 // ============================
 // NAVIGATION
@@ -172,7 +177,12 @@ function renderSignalCard(data) {
 // GET SIGNAL
 // ============================
 document.getElementById("getSignalBtn").onclick = () => {
-    fetch(`${API}/signal`, {
+    if (!user || !user.id) {
+        alert("Telegram user not initialized");
+        return;
+    }
+
+    fetch("/signal", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -191,6 +201,7 @@ document.getElementById("getSignalBtn").onclick = () => {
     })
     .catch(() => renderSignalCard({ error: true }));
 };
+
 
 // ============================
 // SUBSCRIPTION MODAL
