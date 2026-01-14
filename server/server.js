@@ -10,9 +10,11 @@ app.use(cors());
 app.use(express.json());
 
 // =======================
-// STATIC FRONTEND
+// STATIC FRONTEND (FIX FOR server/public)
 // =======================
-const publicPath = path.join(__dirname, "../public");
+const publicPath = path.join(__dirname, "public");
+console.log("📁 Public folder:", publicPath);
+
 app.use(express.static(publicPath));
 
 app.get("/", (req, res) => {
@@ -27,7 +29,7 @@ app.get("/health", (req, res) => {
 });
 
 // =======================
-// USERS (IN-MEMORY)
+// USERS
 // =======================
 const users = {};
 const ADMIN_ID = 7940666073;
@@ -58,7 +60,7 @@ app.post("/auth", (req, res) => {
 });
 
 // =======================
-// BINANCE DATA
+// BINANCE
 // =======================
 async function getCandles(symbol, interval) {
     const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=120`;
@@ -78,7 +80,6 @@ function analyzeMarket(candles) {
     if (!candles || candles.length < 30) return null;
 
     const closes = candles.map(c => c.close);
-
     const emaFast = EMA.calculate({ values: closes, period: 9 });
     const emaSlow = EMA.calculate({ values: closes, period: 21 });
     const rsi = RSI.calculate({ values: closes, period: 14 });
@@ -86,34 +87,7 @@ function analyzeMarket(candles) {
     const price = closes.at(-1);
     const fast = emaFast.at(-1);
     const slow = emaSlow.at(-1);
-    const lastRSI = rsi.at(-1);
 
-    // 🔥 STRONG SETUP
-    if (fast > slow && lastRSI < 55) {
-        return {
-            type: "LONG",
-            entry: price.toFixed(2),
-            stopLoss: (price * 0.992).toFixed(2),
-            takeProfit: (price * 1.02).toFixed(2),
-            confidence: "High",
-            risk: "Low",
-            winRate: "65%"
-        };
-    }
-
-    if (fast < slow && lastRSI > 45) {
-        return {
-            type: "SHORT",
-            entry: price.toFixed(2),
-            stopLoss: (price * 1.008).toFixed(2),
-            takeProfit: (price * 0.98).toFixed(2),
-            confidence: "High",
-            risk: "Low",
-            winRate: "63%"
-        };
-    }
-
-    // ⚖️ FALLBACK (ВСЕГДА ДАЁМ СИГНАЛ)
     return {
         type: fast >= slow ? "LONG" : "SHORT",
         entry: price.toFixed(2),
@@ -121,8 +95,8 @@ function analyzeMarket(candles) {
             ? (price * 0.995).toFixed(2)
             : (price * 1.005).toFixed(2),
         takeProfit: fast >= slow
-            ? (price * 1.012).toFixed(2)
-            : (price * 0.988).toFixed(2),
+            ? (price * 1.015).toFixed(2)
+            : (price * 0.985).toFixed(2),
         confidence: "Medium",
         risk: "Medium",
         winRate: "56%"
@@ -154,27 +128,10 @@ app.post("/signal", async (req, res) => {
         }
 
         res.json(signal);
-
     } catch (e) {
-        console.error("SIGNAL ERROR:", e);
+        console.error("❌ SIGNAL ERROR:", e.message);
         res.json({ error: true });
     }
-});
-
-// =======================
-// CONFIRM PAYMENT (MANUAL)
-// =======================
-app.post("/confirm-payment", (req, res) => {
-    const { userId } = req.body;
-    const user = users[userId];
-
-    if (!user) return res.json({ ok: false });
-
-    user.subscribed = true;
-    user.freeSignalsUsed = 0;
-
-    console.log("💰 Subscription activated for user:", userId);
-    res.json({ ok: true });
 });
 
 // =======================
