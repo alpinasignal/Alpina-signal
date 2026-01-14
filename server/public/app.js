@@ -262,3 +262,27 @@ document.querySelectorAll(".plan-card").forEach(card => {
 // ============================
 if (modal) modal.classList.add("hidden");
 showScreen("signals");
+
+// ============================
+// CONFIRM PAYMENT (MANUAL TEST)
+// ============================
+function confirmPayment() {
+    if (!user || !user.id) {
+        alert("User not identified");
+        return;
+    }
+
+    fetch("/confirm-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id })
+    })
+    .then(res => res.json())
+    .then(() => {
+        alert("✅ Payment received. Subscription activated.");
+        closeModal();
+    })
+    .catch(() => {
+        alert("❌ Error. Try again later.");
+    });
+}
